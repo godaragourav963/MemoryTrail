@@ -7,7 +7,7 @@ const upload = require("../middleware/uploadMiddleware");
 const memoryController = require("../controllers/memoryController");
 
 router.post("/:tripId", protect, upload.single("image"), memoryController.addMemory);
-router.get("/:tripId", protect, memoryController.getMemories);
+router.get("/", protect, memoryController.getMemories);
 router.delete("/delete/:memoryId", protect, memoryController.deleteMemory);
 router.get("/:tripId/stats", protect, memoryController.getTripStats);
 router.get("/:tripId/map", protect, memoryController.getMapData);

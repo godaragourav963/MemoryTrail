@@ -46,15 +46,58 @@ exports.addMemory = async (req, res) => {
 // =======================
 exports.getMemories = async (req, res) => {
   try {
-    const { tripId } = req.params;
+    const {
+      tripId,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 5
+    } = req.query;
 
-    const memories = await Memory.find({ tripId })
-      .sort({ dateTime: 1 });
+    let filter = {};
 
-    res.status(200).json(memories);
+    if (tripId) {
+      filter.tripId = tripId;
+    }
+
+    const { search } = req.query;
+
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { location: { $regex: search, $options: "i" } },
+        { notes: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate);
+    }
+
+    const skip = (page - 1) * limit;
+
+    const memories = await Memory.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
+
+    const total = await Memory.countDocuments(filter);
+
+    res.status(200).json({
+      success: true,
+      page: Number(page),
+      totalPages: Math.ceil(total / limit),
+      totalMemories: total,
+      memories,
+    });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
