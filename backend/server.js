@@ -32,3 +32,7 @@ app.listen(PORT, () => {
 const tripRoutes = require("./routes/tripRoutes");
 
 app.use("/api/trips", tripRoutes);
+
+const path = require("path");
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
