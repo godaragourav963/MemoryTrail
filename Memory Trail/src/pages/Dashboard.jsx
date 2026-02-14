@@ -1,14 +1,18 @@
 import { useNavigate, Link } from "react-router-dom";
-import { getTrips } from "../utils/storage";
 import { useState, useEffect } from "react";
+import { fetchTrips } from "../api/trips";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [trips, setTrips] = useState([]);
+  const [trips, setTrips] = useState(null);
 
   useEffect(() => {
-    setTrips(getTrips());
+    fetchTrips().then((data) => {
+      setTrips(data.trips || []);
+    });
   }, []);
+
+  if (!trips) return <p style={{ padding: 20 }}>Loading trips...</p>;
 
   return (
     <div className="container">
@@ -16,40 +20,43 @@ export default function Dashboard() {
 
       {trips.length === 0 && <p>No trips yet</p>}
 
-      {trips.map((trip, index) => (
-        <div className="card" key={index}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+          gap: "20px",
+          marginTop: "20px"
+        }}
+      >
+        {trips.map((trip) => (
+          <div className="card" key={trip._id}>
+            {trip.coverImage && (
+              <img
+                src={`http://localhost:5000/${trip.coverImage}`}
+                style={{
+                  width: "100%",
+                  height: "160px",
+                  objectFit: "cover",
+                  borderRadius: "10px",
+                  marginBottom: "10px"
+                }}
+              />
+            )}
 
-  {trip.cover && (
-    <img
-  src={trip.cover}
-  style={{
-    width: "100%",
-    height: "180px",
-    objectFit: "cover",
-    borderRadius: "8px",
-    marginBottom: "10px"
-  }}
-/>
+            <Link to={`/trip/${trip._id}`}>
+              <strong style={{ fontSize: 16 }}>{trip.tripName}</strong>
+            </Link>
 
-  )}
+            <p style={{ color: "#64748b", marginTop: 4 }}>
+              {trip.startDate?.slice(0, 10)} → {trip.endDate?.slice(0, 10)}
+            </p>
+          </div>
+        ))}
+      </div>
 
- <Link to={`/trip/${trip.id}`}>
-
-    <strong>{trip.name}</strong>
-  </Link>
-
-  <p>{trip.start} → {trip.end}</p>
-
-</div>
-
-      ))}
-
-      <button onClick={() => navigate("/create")}>
+      <button style={{ marginTop: 25 }} onClick={() => navigate("/create")}>
         + Add New Trip
       </button>
     </div>
   );
 }
-
-
-

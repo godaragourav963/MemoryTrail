@@ -5,7 +5,9 @@ export default function Profile() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    fetchProfile().then(setUser);
+    fetchProfile().then((data) => {
+      setUser(data.user);
+    });
   }, []);
 
   if (!user) return <p>Loading profile...</p>;
@@ -18,3 +20,4 @@ export default function Profile() {
     </div>
   );
 }
+
